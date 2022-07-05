@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title></title>
+  <meta charset="utf-8">
+</head>
+
+<body>
+  <h1>静态资源管理器</h1>
+  <!-- 用于上传文件的form表单 -->
+  <input type="file" name="file" id="file" />
+
+  <hr>
+
+  <!-- 文件列表 -->
+  <div style="color: blue;">
+    <%= msg %>
+  </div>
+  <ul>
+    <% list.forEach(function(item){ %>
+      <li style="margin: 10px 0px;">
+        <%=item%> &nbsp;
+          <a href="javascript:del('<%=item%>');">删除</a> &nbsp;
+          <a href="javascript:down('<%=item%>');">下载</a>
+          <a href="javascript:copyLink('<%=item%>')">复制链接</a>
+          <a href="javascript:play('<%=item%>')">播放</a>
+      </li>
+      <% }) %>
+  </ul>
+  <div>
+    <audio id="play_audio" src="" controls></audio>
+  </div>
+  <script>
+    const fileBtn = document.getElementById('file')
+    fileBtn.addEventListener('change', (e) => {
+      let file = e.target;
+      const fd = new FormData()
+      fd.append('file', file.files[0])
+      let filename = file.files[0].name;
+      fetch(`/upload?filename=${filename}`, {
+        method: 'POST',
+        body: fd,
+      }).then(res => {
+        if (res.ok) {
+          return res.json();
+        } else {
+          console.log('error')
+        }
+      }).then(res => {
+        console.log('res is', res);
+      })
+    })
+  </script>
+  <script>
+    //删除文件的请求方法
+    function del(filename) {
+      var result = window.confirm(`确定要删除${filename}吗？`)
+      if (result) {
+        window.location.href = `/del?file=${filename}`
+      }
+    }
+
+    //下载文件的请求方法
+    function down(filename) {
+      var url = `/down?fn=${filename}`
+      window.location.href = encodeURI(url) //处理中文参数
+    }
+
+    //播放音频文件
+    function play(filename) {
+      let url = `/${filename}`;
+      let audioTag = document.getElementById('play_audio');
+      audioTag.setAttribute('src', url);
+      audioTag.play();
+    }
+  </script>
+</body>
+
+</html>
